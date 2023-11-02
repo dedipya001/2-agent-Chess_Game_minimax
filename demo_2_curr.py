@@ -115,3 +115,4 @@ while True:
     window.blit(user_boat_img, (SQUARE_SIZE * user_boat_col, SQUARE_SIZE * user_boat_row))
 
     pygame.display.update()
+    
