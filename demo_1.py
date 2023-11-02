@@ -13,8 +13,8 @@ LIGHT_GREEN = (144, 238, 144)
 FONT = pygame.font.Font(None, 36)
 
 # Define the positions of user's kings and boat
-user_king1_col, user_king1_row = 3, 0  # User's first king
-user_king2_col, user_king2_row = 4, 0  # User's second king
+user_king1_col, user_king1_row = 4, 0  # User's first king
+user_king2_col, user_king2_row = 4, 7  # User's second king
 user_boat_col, user_boat_row = 0, 6  # User's boat
 
 # Initialize user and opponent scores
@@ -76,7 +76,7 @@ def highlight_valid_moves(valid_moves):
     for move in valid_moves:
         col, row = move
         pygame.draw.rect(chessboard, LIGHT_GREEN, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-
+        pygame.draw.rect(chessboard, (0, 0, 0), (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE), 2)
 # Main game loop
 while True:
     for event in pygame.event.get():
@@ -128,5 +128,7 @@ while True:
     window.blit(user_boat_img, (SQUARE_SIZE * user_boat_col, SQUARE_SIZE * user_boat_row))
     window.blit(user_points_text, (WIDTH, user_points_y))
     window.blit(opponent_points_text, (WIDTH, opponent_points_y))
+    
+
 
     pygame.display.update()

@@ -9,13 +9,17 @@ WIDTH, HEIGHT = 700, 700
 SQUARE_SIZE = WIDTH // 8
 BROWN = (139, 69, 19)
 PALE_WHITE = (255, 222, 173)
-highlight_clr = (230, 230, 250)
+LIGHT_GREEN = (144, 238, 144)
 FONT = pygame.font.Font(None, 36)
 
 # Define the positions of user's kings and boat
 user_king1_col, user_king1_row = 4, 0  # User's first king
 user_king2_col, user_king2_row = 4, 7  # User's second king
 user_boat_col, user_boat_row = 0, 6  # User's boat
+
+# Initialize user and opponent scores
+user_points = 1000
+opponent_points = 1000
 
 # Create the chessboard surface
 chessboard = pygame.Surface((WIDTH, HEIGHT))
@@ -39,7 +43,9 @@ window = pygame.display.set_mode((WIDTH + 300, HEIGHT))
 # Variables to keep track of the selected piece and whether it's the user's turn
 selected_piece = None
 user_turn = True
-highlighted_squares = []  # Store the highlighted squares
+
+# Initialize the highlighted_squares as an empty list
+highlighted_squares = []
 
 # Create a function to calculate valid moves for the kings and boat
 def calculate_valid_moves(piece_col, piece_row, piece_type):
@@ -71,7 +77,61 @@ def calculate_valid_moves(piece_col, piece_row, piece_type):
 def highlight_valid_moves(valid_moves):
     for move in valid_moves:
         col, row = move
-        pygame.draw.rect(chessboard, highlight_clr, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+        pygame.draw.rect(chessboard, LIGHT_GREEN, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+        pygame.draw.rect(chessboard, (0, 0, 0), (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE), 2)
+
+# Create a function to dehighlight valid moves
+def dehighlight_valid_moves():
+    global highlighted_squares  # Declare as global
+    for move in highlighted_squares:
+        col, row = move
+        color = BROWN if (col + row) % 2 == 0 else PALE_WHITE
+        pygame.draw.rect(chessboard, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+        pygame.draw.rect(chessboard, (0, 0, 0), (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE), 2)
+    highlighted_squares = []
+
+# Create a function to move a piece with animation
+def move_piece(selected_piece, col, row):
+    global highlighted_squares
+    global user_king1_col, user_king1_row, user_king2_col, user_king2_row, user_boat_col, user_boat_row
+
+    destination_x = col * SQUARE_SIZE
+    destination_y = row * SQUARE_SIZE
+
+    if selected_piece == (user_king1_col, user_king1_row):
+        source_x, source_y = user_king1_col * SQUARE_SIZE, user_king1_row * SQUARE_SIZE
+        user_king1_col, user_king1_row = col, row
+    elif selected_piece == (user_king2_col, user_king2_row):
+        source_x, source_y = user_king2_col * SQUARE_SIZE, user_king2_row * SQUARE_SIZE
+        user_king2_col, user_king2_row = col, row
+    elif selected_piece == (user_boat_col, user_boat_row):
+        source_x, source_y = user_boat_col * SQUARE_SIZE, user_boat_row * SQUARE_SIZE
+        user_boat_col, user_boat_row = col, row
+
+    animation_frames = 20  # Number of frames for the animation
+    for frame in range(animation_frames):
+        window.blit(chessboard, (0, 0))
+        window.blit(user_king_img, (user_king1_col * SQUARE_SIZE, user_king1_row * SQUARE_SIZE))
+        window.blit(user_king_img, (user_king2_col * SQUARE_SIZE, user_king2_row * SQUARE_SIZE))
+        window.blit(user_boat_img, (user_boat_col * SQUARE_SIZE, user_boat_row * SQUARE_SIZE))
+        if selected_piece == (user_king1_col, user_king1_row):
+            x = source_x + (destination_x - source_x) * frame / animation_frames
+            y = source_y + (destination_y - source_y) * frame / animation_frames
+            window.blit(user_king_img, (x, y))
+        elif selected_piece == (user_king2_col, user_king2_row):
+            x = source_x + (destination_x - source_x) * frame / animation_frames
+            y = source_y + (destination_y - source_y) * frame / animation_frames
+            window.blit(user_king_img, (x, y))
+        elif selected_piece == (user_boat_col, user_boat_row):
+            x = source_x + (destination_x - source_x) * frame / animation_frames
+            y = source_y + (destination_y - source_y) * frame / animation_frames
+            window.blit(user_boat_img, (x, y))
+
+        pygame.display.update()
+        pygame.time.delay(1000 // 60)  # Delay for 60 FPS
+
+    # Clear the highlighted squares
+    dehighlight_valid_moves()
 
 # Main game loop
 while True:
@@ -84,14 +144,10 @@ while True:
             row = event.pos[1] // SQUARE_SIZE
             if selected_piece is not None:
                 # If a piece is already selected, dehighlight its valid moves
-                for move in highlighted_squares:
-                    col, row = move
-                    color = BROWN if (col + row) % 2 == 0 else PALE_WHITE
-                    pygame.draw.rect(chessboard, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                dehighlight_valid_moves()
                 if (col, row) == selected_piece:
                     # If the user clicks on the same piece again, unselect it
                     selected_piece = None
-                    highlighted_squares = []
                 else:
                     # If the user clicks on a different piece, update the selection
                     selected_piece = (col, row)
@@ -108,11 +164,24 @@ while True:
                 highlight_valid_moves(valid_moves)
                 highlighted_squares = valid_moves
 
-    # Draw the chessboard and pieces
+        if selected_piece is not None and (col, row) in highlighted_squares:
+            # If the user clicks on a valid destination square, move the piece
+            move_piece(selected_piece, col, row)
+
+    # Draw points for both players within the larger box
+    user_points_text = FONT.render(f"User Score: {user_points}", True, (0, 0, 0))
+    opponent_points_text = FONT.render(f"Opponent Score: {opponent_points}", True, (0, 0, 0))
+
+    # Adjust the position of the opponent's score text
+    opponent_points_y = 20
+    user_points_y = HEIGHT - 20 - user_points_text.get_height()
+
+    pygame.draw.rect(window, BROWN, (WIDTH, 0, 300, HEIGHT))
     window.blit(chessboard, (0, 0))
     window.blit(user_king_img, (SQUARE_SIZE * user_king1_col, SQUARE_SIZE * user_king1_row))
     window.blit(user_king_img, (SQUARE_SIZE * user_king2_col, SQUARE_SIZE * user_king2_row))
     window.blit(user_boat_img, (SQUARE_SIZE * user_boat_col, SQUARE_SIZE * user_boat_row))
+    window.blit(user_points_text, (WIDTH, user_points_y))
+    window.blit(opponent_points_text, (WIDTH, opponent_points_y))
 
     pygame.display.update()
-    
