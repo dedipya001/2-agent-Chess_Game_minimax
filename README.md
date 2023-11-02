@@ -12,5 +12,6 @@ F.       The king of the system can be killed if it steps into the attacking ran
 G.      The killing of system king can give earnings of 100 points.
 H.      If the user loses its king, it will be charged by -100 points.
 
-![image](https://github.com/dedipya001/2-agent-Chess_Game_minimax/assets/111869712/9f6e663d-e49a-4b5b-9b13-e01830d3eb4a)
+![image](https://github.com/dedipya001/2-agent-Chess_Game_minimax/assets/111869712/9f6e663d-e49a-4b5b-9b13-e01830d3eb4a) font-size="400px"
+
 
