@@ -15,7 +15,7 @@ FONT = pygame.font.Font(None, 36)
 # Define the positions of user's kings and boat
 user_king1_col, user_king1_row = 4, 0  # User's first king
 user_king2_col, user_king2_row = 4, 7  # User's second king
-user_boat_col, user_boat_row = 0, 6  # User's boat
+user_boat_col, user_boat_row = 0, 7  # User's boat
 
 # Initialize user and opponent scores
 user_points = 1000
@@ -43,9 +43,7 @@ window = pygame.display.set_mode((WIDTH + 300, HEIGHT))
 # Variables to keep track of the selected piece and whether it's the user's turn
 selected_piece = None
 user_turn = True
-
-# Initialize the highlighted_squares as an empty list
-highlighted_squares = []
+highlighted_squares = []  # Store the highlighted squares
 
 # Create a function to calculate valid moves for the kings and boat
 def calculate_valid_moves(piece_col, piece_row, piece_type):
@@ -59,8 +57,7 @@ def calculate_valid_moves(piece_col, piece_row, piece_type):
                     if 0 <= new_col < 8 and 0 <= new_row < 8:
                         valid_moves.append((new_col, new_row))
     elif piece_type == 'boat':
-        # Define boat's valid moves based on your rules
-        # For example, moving in one direction at a time, not jumping over other pieces, etc.
+        valid_moves = []  # Initialize an empty list for boat's valid moves
         for i in range(1, 8):
             if piece_col + i < 8:
                 valid_moves.append((piece_col + i, piece_row))
@@ -80,58 +77,15 @@ def highlight_valid_moves(valid_moves):
         pygame.draw.rect(chessboard, LIGHT_GREEN, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
         pygame.draw.rect(chessboard, (0, 0, 0), (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE), 2)
 
-# Create a function to dehighlight valid moves
-def dehighlight_valid_moves():
-    global highlighted_squares  # Declare as global
-    for move in highlighted_squares:
-        col, row = move
-        color = BROWN if (col + row) % 2 == 0 else PALE_WHITE
-        pygame.draw.rect(chessboard, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
-        pygame.draw.rect(chessboard, (0, 0, 0), (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE), 2)
-    highlighted_squares = []
-
-# Create a function to move a piece with animation
+# Create a function to move the selected piece
 def move_piece(selected_piece, col, row):
-    global highlighted_squares
     global user_king1_col, user_king1_row, user_king2_col, user_king2_row, user_boat_col, user_boat_row
-
-    destination_x = col * SQUARE_SIZE
-    destination_y = row * SQUARE_SIZE
-
     if selected_piece == (user_king1_col, user_king1_row):
-        source_x, source_y = user_king1_col * SQUARE_SIZE, user_king1_row * SQUARE_SIZE
         user_king1_col, user_king1_row = col, row
     elif selected_piece == (user_king2_col, user_king2_row):
-        source_x, source_y = user_king2_col * SQUARE_SIZE, user_king2_row * SQUARE_SIZE
         user_king2_col, user_king2_row = col, row
     elif selected_piece == (user_boat_col, user_boat_row):
-        source_x, source_y = user_boat_col * SQUARE_SIZE, user_boat_row * SQUARE_SIZE
         user_boat_col, user_boat_row = col, row
-
-    animation_frames = 20  # Number of frames for the animation
-    for frame in range(animation_frames):
-        window.blit(chessboard, (0, 0))
-        window.blit(user_king_img, (user_king1_col * SQUARE_SIZE, user_king1_row * SQUARE_SIZE))
-        window.blit(user_king_img, (user_king2_col * SQUARE_SIZE, user_king2_row * SQUARE_SIZE))
-        window.blit(user_boat_img, (user_boat_col * SQUARE_SIZE, user_boat_row * SQUARE_SIZE))
-        if selected_piece == (user_king1_col, user_king1_row):
-            x = source_x + (destination_x - source_x) * frame / animation_frames
-            y = source_y + (destination_y - source_y) * frame / animation_frames
-            window.blit(user_king_img, (x, y))
-        elif selected_piece == (user_king2_col, user_king2_row):
-            x = source_x + (destination_x - source_x) * frame / animation_frames
-            y = source_y + (destination_y - source_y) * frame / animation_frames
-            window.blit(user_king_img, (x, y))
-        elif selected_piece == (user_boat_col, user_boat_row):
-            x = source_x + (destination_x - source_x) * frame / animation_frames
-            y = source_y + (destination_y - source_y) * frame / animation_frames
-            window.blit(user_boat_img, (x, y))
-
-        pygame.display.update()
-        pygame.time.delay(1000 // 60)  # Delay for 60 FPS
-
-    # Clear the highlighted squares
-    dehighlight_valid_moves()
 
 # Main game loop
 while True:
@@ -143,30 +97,31 @@ while True:
             col = event.pos[0] // SQUARE_SIZE
             row = event.pos[1] // SQUARE_SIZE
             if selected_piece is not None:
-                # If a piece is already selected, dehighlight its valid moves
-                dehighlight_valid_moves()
-                if (col, row) == selected_piece:
-                    # If the user clicks on the same piece again, unselect it
+                if (col, row) in highlighted_squares:
+                    move_piece(selected_piece, col, row)
                     selected_piece = None
+                    for move in highlighted_squares:
+                        col, row = move
+                        color = BROWN if (col + row) % 2 == 0 else PALE_WHITE
+                        pygame.draw.rect(chessboard, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                    highlighted_squares = []
                 else:
-                    # If the user clicks on a different piece, update the selection
-                    selected_piece = (col, row)
+                    selected_piece = None
+                    for move in highlighted_squares:
+                        col, row = move
+                        color = BROWN if (col + row) % 2 == 0 else PALE_WHITE
+                        pygame.draw.rect(chessboard, color, (col * SQUARE_SIZE, row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                    highlighted_squares = []
             elif (col, row) == (user_king1_col, user_king1_row) or (col, row) == (user_king2_col, user_king2_row):
-                # User has clicked on a king
                 selected_piece = (col, row)
                 valid_moves = calculate_valid_moves(col, row, 'king')
                 highlight_valid_moves(valid_moves)
                 highlighted_squares = valid_moves
             elif (col, row) == (user_boat_col, user_boat_row):
-                # User has clicked on the boat
                 selected_piece = (col, row)
                 valid_moves = calculate_valid_moves(col, row, 'boat')
                 highlight_valid_moves(valid_moves)
                 highlighted_squares = valid_moves
-
-        if selected_piece is not None and (col, row) in highlighted_squares:
-            # If the user clicks on a valid destination square, move the piece
-            move_piece(selected_piece, col, row)
 
     # Draw points for both players within the larger box
     user_points_text = FONT.render(f"User Score: {user_points}", True, (0, 0, 0))
