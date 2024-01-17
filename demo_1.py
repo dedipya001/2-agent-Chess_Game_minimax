@@ -1,3 +1,16 @@
+
+
+
+
+# demo_2_curr.py is the runnable .py file.
+# this file is just an intermediary stage file.
+
+
+
+
+
+
+
 import pygame
 from pygame.locals import *
 import sys
