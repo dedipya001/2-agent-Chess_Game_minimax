@@ -15,3 +15,6 @@ H.      If the user loses its king, it will be charged by -100 points.
 <img src = "https://github.com/dedipya001/2-agent-Chess_Game_minimax/assets/111869712/9f6e663d-e49a-4b5b-9b13-e01830d3eb4a" width="600" height="600" />
 
 
+Short PPT on this Project :  <a href="https://www.canva.com/design/DAF0tQFpS3Y/fhHqKJdO3rpQDPhXQ-yftQ/edit?utm_content=DAF0tQFpS3Y&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton"> PPT </a>
+
+
